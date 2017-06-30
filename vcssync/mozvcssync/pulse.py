@@ -73,6 +73,8 @@ def get_consumer(userid, password,
                  hgmo_exchange='exchange/hgpushes/v2',
                  github_queue=None,
                  hgmo_queue=None,
+                 github_routing_key='#',
+                 hgmo_routing_key='#',
                  extra_data=None):
     """Obtain a Pulse consumer that can handle received messages.
 
@@ -134,7 +136,7 @@ def get_consumer(userid, password,
         gh_queue = kombu.Queue(name=github_queue,
                                exchange=gh_exchange,
                                durable=True,
-                               routing_key='#',
+                               routing_key=github_routing_key,
                                exclusive=False,
                                auto_delete=False,
                                channel=conn)
@@ -148,7 +150,7 @@ def get_consumer(userid, password,
         hg_queue = kombu.Queue(name=hgmo_queue,
                                exchange=hg_exchange,
                                durable=True,
-                               routing_key='#',
+                               routing_key=hgmo_routing_key,
                                exclusive=False,
                                auto_delete=False,
                                channel=conn)

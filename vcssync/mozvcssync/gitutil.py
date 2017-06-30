@@ -28,7 +28,7 @@ class GitCommand(object):
         self.logger = logger
         self.secret = secret
 
-    def cmd(self, *command):
+    def cmd(self, *command, **opts):
         """ Run the specified command with git.
 
         eg. git.cmd('status', '--short')
@@ -40,19 +40,20 @@ class GitCommand(object):
             if self.secret:
                 command_str = command_str.replace(self.secret, 'xxx')
             self.logger.info('$ %s' % command_str)
-
         subprocess.check_call(
-            command,
-            cwd=self.repo_path if os.path.exists(self.repo_path) else None)
+                command, 
+                cwd=self.repo_path if os.path.exists(self.repo_path) else None, 
+                **opts)
 
-    def get(self, *command):
+    def get(self, *command, **opts):
         """ Run the specified command with git and return the result.
 
         eg. diff = git.cmd('diff', '--no-color')
         """
         assert command and len(command)
         command = ['git'] + list(command)
-        return subprocess.check_output(command, cwd=self.repo_path)
+        return subprocess.check_output(command, cwd=self.repo_path,
+                                       **opts)
 
 
 def setup_local_clone(path, url, git=None):
