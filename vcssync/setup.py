@@ -9,6 +9,7 @@ console_scripts = [
     'servo-overlay=mozvcssync.servo:overlay_cli',
     'servo-pulse-listen=mozvcssync.servo:pulse_daemon',
     'test-apply-changes=mozvcssync.util:test_apply_changes_from_list',
+    'wpt-pulse-listen=mozvcssync.wpt:pulse_daemon',
 ]
 
 # These commands are really only useful for testing. So don't expose them by
