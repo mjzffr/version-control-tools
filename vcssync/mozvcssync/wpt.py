@@ -169,12 +169,18 @@ def commit_changes(git_repo_path, path, message):
 
 
 def push_to_try(git_repo_path, branch):
-    # TODO determine affected tests
-    # push with --try-test-paths web-platform-tests:path/to/dir ...
-    # -u web-platform-tests-1
+    # TODO determine affected tests (use new wpt command in upstream repo)
+    affected_tests = [
+        "testing/web-platform/tests/webdriver",
+        "testing/web-platform/tests/2dcontext",
+        "testing/web-platform/tests/cookies",
+    ]
     results_url = None
     git = GitCommand(os.path.abspath(git_repo_path))
-    try_message = "try: -b o -p linux64 -u web-platform-tests-1 -t none"
+    # TODO specify relevant platforms
+    try_message = ("try: -b do -p linux,linux64 -u web-platform-tests-1,web-platform-tests-e10s-1 "
+                   "-t none --artifact --try-test-paths ")
+    try_message += "".join(["web-platform-tests:" + t for t in affected_tests])
     git.cmd(b'checkout', branch)
     git.cmd(b'commit', b'--allow-empty', b'-m', try_message)
     try:
@@ -193,5 +199,3 @@ def _mach(name, path_to_gecko, options=None):
     if options:
         command.extend(options)
     subprocess.check_call(command, cwd=path_to_gecko)
-
-
