@@ -1,0 +1,37 @@
+---
+- name: prepare local files for deployment
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: produce wptsync Python wheel
+      command: '{{ vct | mandatory }}/venv/bin/pip wheel --no-deps -w {{ vct }}/venv/wheelhouse {{ vct }}/wpt-sync/'
+    - name: produce mozautomation Python wheel
+      command: '{{ vct | mandatory }}/venv/bin/pip wheel --no-deps -w {{ vct }}/venv/wheelhouse {{ vct }}/pylib/mozautomation/'
+
+- name: deploy vcs syncing service
+  hosts: wptsync
+  user: mozilla
+  become: true
+
+  pre_tasks:
+    - name: import wpt sync secrets
+      shell: echo "Do something with sync.ini maybe?"
+    #  register: secrets
+
+    # Ansible's variable interpolation behavior is crazy and this ugly redundancy
+    # parsing the YAML is the only way gps could get this to work.
+    # - name: set fact with secrets
+    #   set_fact:
+    #     pulse_userid: "{{ (secrets.stdout | from_yaml).pulse_userid | mandatory }}"
+    #     pulse_password: "{{ (secrets.stdout | from_yaml).pulse_password | mandatory }}"
+    #     servo_github_token: "{{ (secrets.stdout | from_yaml).servo_github_token | mandatory }}"
+    #     servo_github_email: "{{ (secrets.stdout | from_yaml) .servo_github_email | mandatory }}"
+    #     servo_github_name: "{{ (secrets.stdout | from_yaml) .servo_github_name | mandatory }}"
+    #     servo_github_ssh_key: "{{ (secrets.stdout | from_yaml).servo_github_ssh_key | mandatory }}"
+    #     servo_hgmo_ssh_key: "{{ (secrets.stdout | from_yaml).servo_hgmo_ssh_key | mandatory }}"
+    #     servo_hgmo_ssh_user: "{{ (secrets.stdout | from_yaml).servo_hgmo_ssh_user | mandatory }}"
+
+  roles:
+    #- common
+    #- { role: journald-cloudwatch, journald_cloudwatch_group: /wptsync }
+    #- wptsync

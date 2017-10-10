@@ -25,3 +25,6 @@ hgweb-prod
 
 [servovcssync]
 servo-vcs-sync.mozops.net ansible_ssh_user=centos ansible_become=yes
+
+[wptsync]
+192.168.60.133 ansible_ssh_user=mozilla ansible_become=yes ansible_ssh_private_key_file=~/.ssh/id_rsa_ansible_vm_test

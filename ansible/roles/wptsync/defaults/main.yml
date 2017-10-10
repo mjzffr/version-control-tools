@@ -1,0 +1,8 @@
+---
+#mozvcssync_wheel: mozvcssync-0.1-py2-none-any.whl
+#mozautomation_wheel: mozautomation-0.2-py2-none-any.whl
+
+# Can move a bunch of sync.ini stuff in here?
+
+# S3 url to persist overlay tracking data.
+#servo_shamap_s3_upload_url: "s3://moz-vcssync-servo-commitmap/shamap"
