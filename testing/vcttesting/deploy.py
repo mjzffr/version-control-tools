@@ -82,6 +82,12 @@ def deploy_vcs_sync(verbosity=0):
                         verbosity=verbosity)
 
 
+def deploy_wptsync(verbosity=0):
+    extra = {'vct': ROOT}
+    return run_playbook('wptsync-deploy', extra_vars=extra,
+                        verbosity=verbosity)
+
+
 def hgmo_strip(repo, rev, verbosity=0):
     extra = {
         'repo': repo,

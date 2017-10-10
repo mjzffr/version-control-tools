@@ -17,7 +17,7 @@ source ${VENV}/bin/activate
 set -u
 
 # Note: pycrypto may not build on OSX with hombrew gmp unless you add:
-# export CFLAGS='-I/usr/local/include -L/usr/local/lib'
+#export CFLAGS='-I/usr/local/include -L/usr/local/lib'
 pip install --upgrade --require-hashes -r deploy-requirements.txt
 
 cd testing

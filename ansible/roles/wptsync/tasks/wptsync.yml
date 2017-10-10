@@ -1,0 +1,126 @@
+# This playbook configures a system to perform syncing of web-platform-tests
+#
+# By default, tasks are executed as the wptsync user.
+---
+- name: create wptsync user
+  user: name=wptsync
+        shell=/bin/bash
+        state=present
+
+- name: create ~wptsync/.ssh
+  file: path=/home/wptsync/.ssh
+        state=directory
+        owner=wptsync
+        group=wptsync
+        mode=0700
+
+# Sudoers policy allows user to start systemd services. Ideally we
+# would use systemd user units. But CentOS 7 doesn't have that systemd
+# feature enabled.
+- name: sudoers policy for wptsync
+  copy: src=sudoers-wptsync
+        dest=/etc/sudoers.d/wptsync
+        owner=root
+        group=root
+        mode=0440
+
+- name: install ssh known_hosts file
+  copy: src=known_hosts
+        dest=/home/wptsync/.ssh/known_hosts
+        mode=0600
+  become_user: wptsync
+
+- name: ssh config for wptsync user
+  template: src=servo-ssh_config.j2
+            dest=/home/wptsync/.ssh/config
+            mode=0600
+  become_user: wptsync
+
+- name: git config for wptsync user
+  template: src=servo-git_config.j2
+            dest=/home/wptsync/.gitconfig
+            mode=0600
+  become_user: wptsync
+
+- name: install SSH keys
+  copy: dest=/home/wptsync/.ssh/id_{{ item.name }}
+        content="{{ item.value }}"
+        mode=0600
+  with_items:
+    - { name: github, value: "{{ servo_github_ssh_key }}" }
+    - { name: hgmo, value: "{{ servo_hgmo_ssh_key }}" }
+  become_user: wptsync
+
+- name: create virtualenv for servo syncing
+  include: ../../../tasks/virtualenv.yml
+           venv=/home/wptsync/venv
+           requirements=../../vcssync/prod-requirements.txt
+  become_user: wptsync
+
+- name: copy mozvcssync wheel to server
+  copy: src={{ vct | mandatory }}/venv/wheelhouse/{{ item }}
+        dest=/home/wptsync/{{ item }}
+        owner=wptsync
+        group=wptsync
+        mode=0644
+  with_items:
+    - "{{ mozvcssync_wheel | mandatory }}"
+    - "{{ mozautomation_wheel | mandatory }}"
+  become_user: wptsync
+
+- name: install wheels into virtualenv
+  command: /home/wptsync/venv/bin/pip install --upgrade --no-deps --force-reinstall /home/wptsync/{{ item }}
+  with_items:
+    - "{{ mozvcssync_wheel }}"
+    - "{{ mozautomation_wheel }}"
+  become_user: wptsync
+
+- name: seed Servo Git clone with existing conversion
+  command: /usr/bin/git clone --mirror {{ servo_linear_git_push_url | mandatory }} /home/wptsync/servo.git creates=/home/wptsync/servo.git
+  become_user: wptsync
+
+- name: seed Servo Mercurial repo with existing conversion
+  command: /home/wptsync/venv/bin/hg clone -U {{ servo_linear_hg_url }} /home/wptsync/servo-linear creates=/home/wptsync/servo-linear
+  become_user: wptsync
+
+- name: seed Firefox Mercurial repo
+  command: /home/wptsync/venv/bin/hg clone -U https://hg.mozilla.org/mozilla-central /home/wptsync/firefox-overlay creates=/home/wptsync/firefox-overlay
+  become_user: wptsync
+
+- name: install servo-linearize config files
+  template: src={{ item }}.j2
+            dest=/home/wptsync/{{ item }}
+            mode=0644
+  with_items:
+    - wptsync.env
+    - wptsync.ini
+  become_user: wptsync
+
+- name: install systemd unit files
+  copy: src={{ item }}
+        dest=/etc/systemd/system/{{ item }}
+        owner=root
+        group=root
+        mode=0644
+  with_items:
+    - wptsync.target
+    - servo-linearize.service
+    - servo-linearize.timer
+    - servo-overlay.service
+    - servo-overlay.timer
+    - servo-pulse-monitor.service
+    - servo-backout-pr.service
+    - servo-backout-pr.timer
+
+- name: reload systemd units
+  command: /usr/bin/systemctl daemon-reload
+
+- name: systemd services are enabled
+  service: name={{ item }}
+           enabled=yes
+  with_items:
+    - wptsync.target
+
+- name: restart systemd services
+  service: name=wptsync.target
+           state=restarted
