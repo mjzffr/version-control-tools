@@ -1,6 +1,9 @@
+import argparse
 import os
 from collections import defaultdict
 from ConfigParser import RawConfigParser
+
+import model
 
 _config = None
 
@@ -22,11 +25,15 @@ def read_ini(path):
     return parser
 
 
-def load():
+def load(sync_path=None, credentials_path=None, *args, **kwargs):
     global _config
     if _config is None:
-        ini_sync = read_ini(os.path.join(root, "sync.ini"))
-        ini_credentials = read_ini(os.path.join(root, "credentials.ini"))
+        if sync_path is None:
+            sync_path = os.path.join(root, "sync.ini")
+        if credentials_path is None:
+            credentials_path = os.path.join(root, "credentials.ini")
+        ini_sync = read_ini(sync_path)
+        ini_credentials = read_ini(credentials_path)
 
         _config = load_files(ini_sync, ini_credentials)
     return _config
@@ -45,9 +52,9 @@ def load_files(ini_sync, ini_credentials):
 
 
 def configure(f):
-    config = load()
 
     def inner(*args, **kwargs):
+        config = load(*args, **kwargs)
         return f(config, *args, **kwargs)
 
     inner.__name__ = f.__name__
@@ -82,6 +89,21 @@ def set_value(config, section, name, value, ini_credentials):
             pass
     target[parts[-1]] = value
 
+def main():
+    root = os.getcwd()
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--sync", action="store", dest="sync_path",
+        help="relative path to ini file for all sync settings")
+    parser.add_argument(
+        "--credentials", action="store", dest="credentials_path"
+        help="relative path to ini file for credential settings")
+    args = parser.parse_args()
+    config = load(**vars(args))
+    print config
+    model.configure(config)
+    model.create()
+    return config
 
 if __name__ == "__main__":
-    print load()
+    main()

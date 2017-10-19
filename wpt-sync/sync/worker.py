@@ -15,14 +15,12 @@ beat_schedule = {
     }
 }
 
-config = settings.load()
 worker = celery.Celery('sync',
                        broker='pyamqp://guest:guest@rabbitmq',
                        include=['sync.tasks'])
 
-
-worker.conf.beat_schedule = beat_schedule
-worker.conf.update(**config["celery"])
-
 if __name__ == "__main__":
+    config = settings.main()
+    worker.conf.beat_schedule = beat_schedule
+    worker.conf.update(**config["celery"])
     worker.start()
