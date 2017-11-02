@@ -8,10 +8,14 @@
     - name: produce mozautomation Python wheel
       command: '{{ vct | mandatory }}/venv/bin/pip wheel --no-deps -w {{ vct }}/venv/wheelhouse {{ vct }}/pylib/mozautomation/'
 
-- name: deploy vcs syncing service
+- name: deploy web-platform-tests syncing service
   hosts: wptsync
   user: mozilla
   become: true
+
+  environment:
+    PATH: "{{ ansible_env.PATH }}:{{ git_cinnabar_path | mandatory }}"
+    WPTSYNC_ROOT: "{{ wptsync_root | mandatory }}"
 
   pre_tasks:
     - name: import wpt sync secrets
@@ -32,6 +36,6 @@
     #     servo_hgmo_ssh_user: "{{ (secrets.stdout | from_yaml).servo_hgmo_ssh_user | mandatory }}"
 
   roles:
-    #- common
-    #- { role: journald-cloudwatch, journald_cloudwatch_group: /wptsync }
-    #- wptsync
+    - common
+    ##- { role: rabbitmq }
+    - wptsync

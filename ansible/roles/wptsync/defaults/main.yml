@@ -1,8 +1,29 @@
 ---
-#mozvcssync_wheel: mozvcssync-0.1-py2-none-any.whl
-#mozautomation_wheel: mozautomation-0.2-py2-none-any.whl
+# venv
+wptsync_wheel: sync-0.1-py2-none-any.whl
+mozautomation_wheel: mozautomation-0.2-py2-none-any.whl
+venv_path: /home/wptsync/venv
+
+# git
+wptsync_email: wpt-sync@mozilla.com
+wptsync_name: wpt-sync Mozilla
+git_cinnabar_url: https://github.com/glandium/git-cinnabar.git
+# avoiding critical bug in 0.5.0b2
+git_cinnabar_revision: a55510fb6f23cf4fab01365640daea757cfb851f
+
+# web-platform-tests
+wpt_name: web-platform-tests
+wpt_url: https://github.com/mjzffr/web-platform-tests
+wpt_origin_remote_url: https://github.com/mjzffr/web-platform-tests.git
+
+# gecko
+gecko_name: gecko
+mozilla_remote_url: hg::https://hg.mozilla.org/projects/elm
+autoland_remote_url: hg::https://hg.mozilla.org/integration/autoland
+
+# environment
+wptsync_root: /home/wptsync/workspace
+git_cinnabar_path: /home/wptsync/git-cinnabar
+
 
 # Can move a bunch of sync.ini stuff in here?
-
-# S3 url to persist overlay tracking data.
-#servo_shamap_s3_upload_url: "s3://moz-vcssync-servo-commitmap/shamap"
