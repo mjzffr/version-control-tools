@@ -1,0 +1,18 @@
+[core]
+	repositoryformatversion = 0
+	filemode = true
+	bare = true
+[remote "try"]
+	url = hg::https://hg.mozilla.org/try
+	fetch = +refs/heads/*:refs/remotes/try/*
+	pushurl = hg::ssh://hg.mozilla.org/try
+	push = +HEAD:refs/heads/branches/default/tip
+	skipDefaultUpdate = True
+[fetch]
+	prune = true
+[remote "mozilla"]
+	url = {{ mozilla_remote_url | mandatory }}
+	fetch = +refs/heads/bookmarks/*:refs/remotes/mozilla/*
+[remote "autoland"]
+	url = {{ autoland_remote_url | mandatory }}
+	fetch = +refs/heads/*:refs/remotes/autoland/*

@@ -1,0 +1,15 @@
+---
+- name: clear git-cinnabar directory
+  file: path={{ git_cinnabar_path | mandatory }}
+        state=absent
+
+- name: clone git-cinnabar
+  command: /usr/bin/git clone {{git_cinnabar_url}} {{ git_cinnabar_path | mandatory }} creates={{ git_cinnabar_path | mandatory }}
+
+- name: checkout tag
+  command: /usr/bin/git checkout {{ git_cinnabar_revision | mandatory }} chdir={{ git_cinnabar_path | mandatory }}
+
+# With `git cinnabar download`, the downloaded helper expects to find libcurl-gnutls.so.4
+# We could link libcurl.so.4.3.0 to libcurl-gnutls.so.4 instead of building.
+- name: build cinnabar helper
+  command: make helper chdir={{ git_cinnabar_path | mandatory }}

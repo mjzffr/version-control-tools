@@ -1,0 +1,25 @@
+---
+- name: install erlang
+  yum: name={{ item }} state=present update_cache=yes
+  with_items:
+    - erlang
+
+- name: get rabbitmq package
+  get_url:
+    url: https://dl.bintray.com/rabbitmq/rabbitmq-server-rpm/rabbitmq-server-3.6.12-1.el7.noarch.rpm
+    dest: /tmp/rabbitmq-server-3.6.12-1.el7.noarch.rpm
+
+- name: Add the rabbitmq key for verification
+  rpm_key:
+    key: http://www.rabbitmq.com/rabbitmq-signing-key-public.asc
+    state: present
+
+- name: install rabbitmq
+  yum:
+    name: /tmp/rabbitmq-server-3.6.12-1.el7.noarch.rpm
+    state: present
+
+- name: enable rabbitmq service
+  service:
+    name: rabbitmq-server
+    enabled: yes

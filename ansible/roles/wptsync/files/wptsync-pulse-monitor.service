@@ -1,0 +1,23 @@
+# Triggered by Pulse events
+
+[Unit]
+Description=Two-way sync between web-platform-tests and mozilla-inbound
+After=local-fs.target network.target nss-lookup.target
+Requires=wptsync-celery-worker.service
+#OnFailure=mail-unit-output@%n.service
+PartOf=wptsync.target
+
+[Service]
+EnvironmentFile=/home/wptsync/wptsync.env
+PrivateTmp=true
+User=wptsync
+Group=wptsync
+
+ExecStart=/home/wptsync/venv/bin/wptsync listen
+
+Restart=always
+RestartSec=300
+TimeoutStopSec=10
+
+[Install]
+WantedBy=wptsync.target

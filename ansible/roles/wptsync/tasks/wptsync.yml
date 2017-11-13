@@ -2,6 +2,7 @@
 #
 # By default, tasks are executed as the wptsync user.
 ---
+
 - name: create wptsync user
   user: name=wptsync
         shell=/bin/bash
@@ -85,6 +86,23 @@
     - credentials.ini
   become_user: wptsync
 
+- name: install wptsync environment file
+  template: src={{ item }}.j2
+            dest=/home/wptsync/{{ item }}
+            mode=0644
+  with_items:
+    - wptsync.env
+  become_user: wptsync
+
+- name: install script for stopping pid
+  copy: src={{ item }}
+        dest=/home/wptsync/{{ item }}
+        owner=wptsync
+        group=wptsync
+        mode=0755
+  with_items:
+    - stop-pid.sh
+
 - name: configure repositories
   command: /home/wptsync/venv/bin/wptsync init
   become_user: wptsync
@@ -105,5 +123,33 @@
     PATH: "{{ venv_path | mandatory }}/bin:{{ ansible_env.PATH }}:{{ git_cinnabar_path | mandatory }}"
     WPTSYNC_ROOT: "{{ wptsync_root | mandatory }}"
 
-# start celery worker and pulse listener
-# could use systemd, celeryd
+- name: install systemd unit files
+  copy: src={{ item }}
+        dest=/etc/systemd/system/{{ item }}
+        owner=root
+        group=root
+        mode=0644
+  with_items:
+    - wptsync.target
+    - wptcelery.target
+    - wptsync-pulse-monitor.service
+    - wptsync-celery-worker.service
+    - wptsync-celery-beat.service
+
+- name: reload systemd units
+  command: /usr/bin/systemctl daemon-reload
+
+- name: systemd services are enabled
+  service: name={{ item }}
+           enabled=yes
+  with_items:
+    - rabbitmq-server
+    - wptsync.target
+    - wptcelery.target
+    - wptsync-pulse-monitor.service
+    - wptsync-celery-worker.service
+    - wptsync-celery-beat.service
+
+- name: restart systemd services
+  service: name=wptsync.target
+           state=restarted
