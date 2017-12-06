@@ -14,4 +14,4 @@ install:
   - docker build -t wptsync_dev --file wpt-sync/docker/dev/Dockerfile .
 
 script:
-  - docker run -it --entrypoint "/app/venv/bin/pytest" wptsync_dev
+  - docker run -it --mount type=bind,source=$(pwd),target=/app/vct --entrypoint "/app/venv/bin/pytest" wptsync_dev
