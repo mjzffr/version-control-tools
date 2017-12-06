@@ -7,6 +7,12 @@ branches:
 python:
   - "2.7"
 
+# Upgrade to newer docker version
+addons:
+  apt:
+    packages:
+      - docker-ce
+
 services:
   - docker
 
