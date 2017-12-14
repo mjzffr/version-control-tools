@@ -21,4 +21,4 @@ install:
   - sudo chown -R 10001 ./wpt-sync
 
 script:
-  - docker run -it --mount type=bind,source=$(pwd),target=/app/vct --entrypoint "/app/venv/bin/pytest" wptsync_dev
+  - docker run -it --env WPTSYNC_REPO_ROOT=/app/vct/wpt-sync/test/testdata --mount type=bind,source=$(pwd),target=/app/vct --entrypoint "/app/venv/bin/pytest" wptsync_dev
