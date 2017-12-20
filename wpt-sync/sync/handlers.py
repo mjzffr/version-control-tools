@@ -155,14 +155,13 @@ class TaskHandler(Handler):
         if not (body.get("origin")
                 and body["origin"].get("revision")
                 and body.get("taskId")):
-            logger.debug("Oh no, this payload doesn't have the format we expect!"
+            logger.error("Payload doesn't have the format we expect!"
                          "Need 'revision' and 'taskId'. Got:\n{}\n".format(body))
             return
 
         sha1 = body["origin"]["revision"]
         task_id = normalize_task_id(body["taskId"])
         result = body["result"]
-
 
         try_push = trypush.TryPush.for_commit(git_gecko, sha1)
         if not try_push:
@@ -183,6 +182,7 @@ class TaskGroupHandler(Handler):
         taskgroup_id = body["taskGroupId"]
 
         try_push = trypush.TryPush.for_taskgroup(git_gecko, taskgroup_id)
+        logger.info("Try push %s completed" % try_push._ref)
         if not try_push:
             # this is not one of our try_pushes
             return
