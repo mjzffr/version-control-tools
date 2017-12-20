@@ -1,0 +1,9 @@
+.git
+wpt-sync/_venv
+wpt-sync/repos
+wpt-sync/work
+wpt-sync/logs
+*~
+*.pyc
+wpt-sync/git-cinnabar
+wpt-sync/ssh
