@@ -1,8 +1,7 @@
 .git
 wpt-sync/_venv
 wpt-sync/repos
-wpt-sync/work
-wpt-sync/logs
+wpt-sync/workspace
 *~
 *.pyc
 wpt-sync/git-cinnabar
