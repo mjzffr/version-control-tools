@@ -6,3 +6,4 @@ wpt-sync/workspace
 *.pyc
 wpt-sync/git-cinnabar
 wpt-sync/ssh
+wpt-sync/appdata
