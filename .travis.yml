@@ -22,3 +22,10 @@ install:
 
 script:
   - docker run -it --env WPTSYNC_REPO_ROOT=/app/vct/wpt-sync/test/testdata --mount type=bind,source=$(pwd),target=/app/vct --entrypoint "/app/venv/bin/pytest" wptsync_dev
+
+notifications:
+  irc:
+    channels:
+      - "irc.mozilla.org#wpt-sync"
+    on_success: change
+    on_failure: always
