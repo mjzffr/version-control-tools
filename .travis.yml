@@ -17,11 +17,11 @@ services:
   - docker
 
 install:
-  - docker build -t wptsync_dev --file wpt-sync/docker/dev/Dockerfile .
+  - docker build -t wptsync_dev --add-host=rabbitmq:127.0.0.1 --file wpt-sync/docker/dev/Dockerfile .
   - sudo chown -R 10001 ./wpt-sync
 
 script:
-  - docker run -it --env WPTSYNC_REPO_ROOT=/app/vct/wpt-sync/test/testdata --mount type=bind,source=$(pwd),target=/app/vct --entrypoint "/app/venv/bin/pytest" wptsync_dev
+  - docker run -it --env WPTSYNC_REPO_ROOT=/app/vct/wpt-sync/test/testdata --mount type=bind,source=$(pwd),target=/app/vct wptsync_dev --test
 
 notifications:
   irc:
