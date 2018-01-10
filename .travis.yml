@@ -21,7 +21,7 @@ install:
   - sudo chown -R 10001 ./wpt-sync
 
 script:
-  - docker run -it --env WPTSYNC_ROOT=/app/workspace/testdata --env WPTSYNC_REPO_ROOT=/app/workspace/testdata --mount type=bind,source=$(pwd),target=/app/vct wptsync_dev --test
+  - docker run -it wptsync_dev --test
 
 notifications:
   irc:
