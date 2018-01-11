@@ -7,3 +7,6 @@ wpt-sync/workspace
 wpt-sync/git-cinnabar
 wpt-sync/ssh
 wpt-sync/appdata
+wpt-sync/test/testdata/**
+!wpt-sync/test/testdata/*.ini
+
