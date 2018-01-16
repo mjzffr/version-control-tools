@@ -161,9 +161,17 @@ class TryPush(base.ProcessData):
         return wpt_tasks
 
     def download_logs(self):
-        wpt_completed = self.wpt_tasks()
-        dest = os.path.join(env.config["root"], env.config["paths"]["try_logs"])
-        return taskcluster.download_logs(wpt_completed, dest)
+        wpt_tasks = self.wpt_tasks()
+        dest = os.path.join(env.config["root"], env.config["paths"]["try_logs"],
+                            "try", self.try_rev)
+        taskcluster.download_logs(wpt_tasks, dest)
+        raw_logs = []
+        for task in wpt_tasks:
+            for run in task.get("status", {}).get("runs", []):
+                log = run.get("_log_paths", []).get("wpt_raw.log")
+                if log:
+                    raw_logs.append(log)
+        return raw_logs
 
 
 class TryCommit(object):

@@ -3,6 +3,7 @@ import requests
 import shutil
 import traceback
 import uuid
+from collections import defaultdict
 
 import slugid
 
@@ -69,38 +70,57 @@ def get_wpt_tasks(taskgroup_id):
     return wpt_tasks
 
 
-def download_logs(tasks, destination, retry=5):
+def download_logs(tasks, destination, retry=5, raw=True):
     if not os.path.exists(destination):
         os.makedirs(destination)
-    url = ARTIFACTS_BASE + "{task}/{run}/public/test_info//wpt_raw.log"
-    log_files = []
+    file_names = ["wptreport.json"]
+    if raw:
+        file_names.append("wpt_raw.log")
+
+    urls = [ARTIFACTS_BASE + "{task}/{run}/public/test_info//%s" % file_name
+            for file_name in file_names]
     for task in tasks:
         status = task.get("status", {})
         for run in status.get("runs", []):
-            params = {
-                "task": status["taskId"],
-                "run": run["runId"],
-            }
-            log_url = url.format(**params)
-            log_name = "live_backing-{task}_{run}.log".format(**params)
-            success = False
-            logger.debug("Trying to download {}".format(log_url))
-            log_path = os.path.abspath(os.path.join(destination, log_name))
-            if os.path.exists(log_path):
-                continue
-            while not success and retry > 0:
-                try:
-                    r = requests.get(log_url, stream=True)
-                    tmp_path = log_path + ".tmp"
-                    with open(tmp_path, 'wb') as f:
-                        r.raw.decode_content = True
-                        shutil.copyfileobj(r.raw, f)
-                    os.rename(tmp_path, log_path)
-                    success = True
-                    log_files.append(log_path)
-                except Exception as e:
-                    logger.warning(traceback.format_exc(e))
-                    retry -= 1
-            if not success:
-                logger.warning("Failed to download log from {}".format(log_url))
-    return log_files
+            for url in urls:
+                params = {
+                    "task": status["taskId"],
+                    "run": run["runId"],
+                }
+                run["_log_paths"] = {}
+                params["file_name"] = url.split("/", 1)[1]
+                log_url = url.format(**params)
+                log_name = "{task}_{run}_{file_name}".format(**params)
+                success = False
+                logger.debug("Trying to download {}".format(log_url))
+                log_path = os.path.abspath(os.path.join(destination, log_name))
+                if os.path.exists(log_path):
+                    continue
+                while not success and retry > 0:
+                    try:
+                        r = requests.get(log_url, stream=True)
+                        tmp_path = log_path + ".tmp"
+                        with open(tmp_path, 'wb') as f:
+                            r.raw.decode_content = True
+                            shutil.copyfileobj(r.raw, f)
+                        os.rename(tmp_path, log_path)
+                        success = True
+                        run["_log_paths"][params["file_name"]] = log_path
+                    except Exception as e:
+                        logger.warning(traceback.format_exc(e))
+                        retry -= 1
+                if not success:
+                    logger.warning("Failed to download log from {}".format(log_url))
+
+
+def parse_job_name(job_name):
+    if job_name.startswith("test-"):
+        job_name = job_name[len("test-"):]
+    if "web-platform-tests" in job_name:
+        job_name = job_name[job_name.index("web-platform-tests"):]
+    job_name = job_name.rstrip("-")
+
+    job_name = job_name.replace("/", "-")
+    job_name = job_name.replace()
+
+    return job_name
